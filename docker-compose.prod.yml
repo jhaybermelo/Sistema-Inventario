@@ -1,0 +1,69 @@
+services:
+  postgres-db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: facturacion
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      TZ: America/Bogota
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d facturacion"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - uploads:/app/uploads
+      - logs:/app/logs
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - app-net
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips "*"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - app-net
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+    networks:
+      - app-net
+
+networks:
+  app-net:
+
+volumes:
+  pgdata:
+  uploads:
+  logs:
+  caddy_data:
+  caddy_config:
