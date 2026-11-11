@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+/* Curvas de easing con más "punch" que las de CSS: usar como ease-out-strong / ease-drawer */
+@theme {
+  /* Marca Droguería Central (verde farmacia). Para cambiar la identidad, edita solo esta escala. */
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-200: #a7f3d0;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #10b981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+  --color-brand-800: #065f46;
+  --color-brand-900: #064e3b;
+  --color-brand-950: #022c22;
+
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f9fafb;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS hace zoom en cualquier input con fuente < 16px: en táctil se sube a 16px */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Movimiento reducido: se quita el desplazamiento/escala, se conservan los cambios de color */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .animate-spin { animation-duration: 1s !important; animation-iteration-count: infinite !important; }
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ── Tablas que se convierten en tarjetas en móvil ──────────────────────────────
+   Uso: <table className="table-cards"> y data-label="..." en cada <td>.
+   El primer <td> hace de título de la tarjeta; un <td> sin data-label (que no sea
+   el primero) se trata como zona de acciones y se alinea a la derecha. */
+@media (max-width: 767px) {
+  table.table-cards { min-width: 0 !important; }
+  .table-cards thead { display: none; }
+  .table-cards,
+  .table-cards tbody,
+  .table-cards tr { display: block; width: 100%; }
+  .table-cards tr { padding: 0.75rem 1rem; }
+  .table-cards td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.25rem 0 !important;
+    max-width: none !important;
+    text-align: right !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+  .table-cards td[data-label]::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: left;
+  }
+  .table-cards td:first-child {
+    display: block;
+    text-align: left !important;
+    font-size: 0.9375rem;
+  }
+  .table-cards td:not([data-label]):not(:first-child) { justify-content: flex-end; }
+  .table-cards td[colspan] { display: block; text-align: center !important; }
+}
